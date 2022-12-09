@@ -1,0 +1,1 @@
+<img src="assets/images/banner_round.png" alt="Nova" />
