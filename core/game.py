@@ -1,21 +1,16 @@
 import threading
 import sys
-import tkinter
 
 import pygame
 import requests
 
+import ui
 from state.ui import UIState
-from ui.components.button import Button
 
-
-_root = tkinter.Tk()
-width, height = _root.winfo_screenwidth(), _root.winfo_screenheight()
-_root.destroy()
 
 class GameCore:
-    SCREEN_WIDTH = width
-    SCREEN_HEIGHT = height
+    SCREEN_WIDTH = 0
+    SCREEN_HEIGHT = 0
     DEFAULT_FPS = 60
 
     def __init__(self):
@@ -46,8 +41,38 @@ class GameCore:
         _type = event.type
         if _type == pygame.QUIT:
             self._ev.set()
+        elif _type == pygame.MOUSEBUTTONDOWN:
+            self._ui_state.user_clicked()
 
     def run(self):
+        ui_state = self._ui_state
+        class TestView(ui.View):
+            def __init__(self):
+                layout = ui.LayoutInfo(
+                    "vertical",
+                    10
+                )
+                super().__init__(ui_state, layout)
+
+            @ui.button(
+                text="Hello",
+                color=(255, 0, 0),
+                size=(60, 30)
+            )
+            def btn_callback(self, btn):
+                print("Clicked")
+
+            @ui.button(
+                text="Hello 2",
+                color=(0, 0, 255),
+                size=(60, 30)
+            )
+            def btn_callback_2(self, btn):
+                print("Clicked, 2")
+
+        view = TestView()
+        view.render((30, 30))
+            
         while not self._ev.is_set():
             self._clock.tick(self.__fps)
             pygame.display.update()
@@ -55,6 +80,8 @@ class GameCore:
             events = pygame.event.get()
             for event in events:
                 self._handle_event(event)
+
+            self._ui_state._process_loop()
 
         pygame.quit()
         sys.exit(0)
