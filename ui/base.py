@@ -68,7 +68,17 @@ class UIBase:
         self.item_id = uuid4().hex
         self.props = props
 
+        self.actions: dict[str, Any] = {}
+        self.previous_position: tuple[float, float] | None = None
+
         self._view: View | None = None
+
+    def register_action(self, action: str, value: Any):
+        self.actions[action] = value
+        # print(self.actions)
+
+    def register_pos(self, pos: tuple[float, float]):
+        self.previous_position = pos
 
     def __repr__(self) -> str:
         return (
@@ -79,23 +89,22 @@ class UIBase:
     
     def __eq__(self, __o: object) -> bool:
         try:
-            return __o.item_id == self.item_id
+            return __o.item_id == self.item_id # type: ignore
         except AttributeError:
             return False
 
     def __hash__(self) -> int:
         return hash(self.item_id)
 
-    def render(self, position: tuple[float, float]):
+    def render(self, position: tuple[float, float] | None = None):
         raise NotImplementedError
 
     @property
-    def view(self) -> View:
+    def view(self) -> View | None:
         self._view
 
     def set_view(self, view: View):
         self._view = view
-
 
 
 T = TypeVar("T", bound=UIBase)

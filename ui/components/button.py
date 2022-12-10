@@ -16,27 +16,45 @@ if TYPE_CHECKING:
 
 
 class Button(UIBase):
-    def __init__(self, state: UIState, callback: Callable[["Button"]], props: dict[str, Any]):
+    def __init__(self, state: UIState, callback: Callable[["Button"], None], props: dict[str, Any]):
         super().__init__(state, callback, props)
 
-    def render(self, position: tuple[float, float]):
+    def render(self, position: tuple[float, float] | None = None):
+        if position is not None:
+            self.register_pos(position)
+        else:
+            position = self.previous_position
+        
+        hover = self.actions.get("hovering", False)
+        hover_color = self.props["hover_color"]
+
         props = self.props
         size_x, size_y = props["size"]
         color = props["color"]
+
+        if hover is True:
+            color = hover_color
+
         border_radius = props["border_radius"]
+
+        assert position is not None
+
         x, y = position
-        self.state.register(
-            self,
+        pipeline = (
+            pygame.draw.rect,
             (
-                pygame.draw.rect,
-                (
-                    color,
-                    pygame.Rect(x, y, size_x, size_y)
-                ),
-                {"border_radius": border_radius}
+                color,
+                pygame.Rect(x, y, size_x, size_y)
             ),
-            self.callback
+            {"border_radius": border_radius}
         )
+        if hover is False:
+            self.state.register(
+                self,
+                pipeline, # type: ignore
+                self.callback
+            )
+        return pipeline
 
 def button(
     *,
